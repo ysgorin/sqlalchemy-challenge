@@ -57,7 +57,7 @@ def prcp():
     prcp_list = []
     for date, prcp in results:
         prcp_dict = {}
-        prcp_dict['date'] = prcp
+        prcp_dict[date] = prcp
         prcp_list.append(prcp_dict)
 
     return jsonify(prcp_list)
