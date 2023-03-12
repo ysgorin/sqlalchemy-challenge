@@ -36,8 +36,7 @@ def welcome():
         f"/api/v1.0/precipitation<br/>"
         f"/api/v1.0/stations<br/>"
         f"/api/v1.0/tobs<br/>"
-        f"/api/v1.0/start_date<br/>"
-        f"/api/v1.0/start_date/end_date<br/>"
+        "/api/v1.0/2010-01-01/2017-08-23<br/>"
     )
 # Precipitation
 @app.route("/api/v1.0/precipitation")
@@ -96,6 +95,29 @@ def tobs():
     tobs_list = list(np.ravel(results))
 
     return jsonify(tobs_list)
+
+# Start Date
+@app.route("/api/v1.0/<start_date>")
+def start_date(start_date):
+    # Create our session (link) from Python to the DB
+    session = Session(engine)
+
+    """Fetch the start date that matches the start_date supplied by the user
+    or a 404 if not."""
+
+    # Query data from start date
+    results = session.query(func.min(precipitation.tobs), func.max(precipitation.tobs),
+              func.avg(precipitation.tobs)).\
+              filter(precipitation.date >= start_date)
+
+    session.close()
+
+    # Convert query into list
+    start_stats = list(np.ravel(results))
+
+    return jsonify(start_stats)
+
+# Start Date and End Date
 
 if __name__ == '__main__':
     app.run(debug=True)
