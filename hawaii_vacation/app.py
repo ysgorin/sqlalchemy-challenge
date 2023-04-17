@@ -36,7 +36,8 @@ def welcome():
         f"/api/v1.0/precipitation<br/>"
         f"/api/v1.0/stations<br/>"
         f"/api/v1.0/tobs<br/>"
-        "/api/v1.0/2010-01-01/2017-08-23<br/>"
+        f"/api/v1.0/<start_date><br/>"
+        f"/api/v1.0/<start_date>/<end_date>"
     )
 # Precipitation
 @app.route("/api/v1.0/precipitation")
@@ -118,6 +119,26 @@ def start_date(start_date):
     return jsonify(start_stats)
 
 # Start Date and End Date
+@app.route("/api/v1.0/<start_date>/<end_date>")
+def start_end_date(start_date, end_date):
+    # Create our session (link) from Python to the DB
+    session = Session(engine)
+
+    """Fetch the data between start_date and end_date
+    that matches the dates supplied by the user or a 404 if not."""
+
+    # Query data between start date and end date
+    results = session.query(func.min(precipitation.tobs), func.max(precipitation.tobs),
+              func.avg(precipitation.tobs)).\
+              filter(precipitation.date >= start_date).\
+              filter(precipitation.date <= end_date)
+
+    session.close()
+
+    # Convert query into list
+    start_end_stats = list(np.ravel(results))
+
+    return jsonify(start_end_stats)
 
 if __name__ == '__main__':
     app.run(debug=True)
